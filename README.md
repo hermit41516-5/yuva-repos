@@ -40,6 +40,9 @@ pip install -r requirements.txt
 ## Usage
 
 ### Step 1: Enroll User
+## First Time Setup
+
+Before using YUVA, you must enroll your voice:
 python enroll.py
 
 ### Step 2: Run Assistant
