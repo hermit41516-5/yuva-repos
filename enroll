@@ -1,0 +1,84 @@
+import os
+import numpy as np
+import librosa
+import pickle
+from sklearn.mixture import GaussianMixture
+from sklearn.preprocessing import StandardScaler
+import joblib
+import time
+import sounddevice as sd
+from scipy.io.wavfile import write
+
+SAMPLE_RATE = 16000
+DURATION = 4
+
+# def record_audio(filename):
+#     print("Recording...")
+#     audio = sd.rec(int(DURATION * SAMPLE_RATE),
+#                    samplerate=SAMPLE_RATE,
+#                    channels=1)
+#     sd.wait()
+#     write(filename, SAMPLE_RATE, audio)
+#     print("Saved:", filename)
+def record_audio(filename):
+    print(f"Recording: {filename}")
+
+    audio = sd.rec(int(DURATION * SAMPLE_RATE),
+                   samplerate=SAMPLE_RATE,
+                   channels=1)
+    sd.wait()
+
+    write(filename, SAMPLE_RATE, audio)
+    print("Saved:", filename)
+
+    time.sleep(1)  # prevents mic crash
+
+def extract_features(file):
+    audio, sr = librosa.load(file, sr=16000)
+    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=13)
+    return mfcc.T
+
+def enroll_user():
+    os.makedirs("audio_samples", exist_ok=True)
+    os.makedirs("models", exist_ok=True)
+
+    all_features = []
+
+    for i in range(3):
+        print(f"\n🎤 Recording sample {i+1}/3")
+
+        filename = f"audio_samples/sample_{i}.wav"
+        record_audio(filename)
+
+        print("Processing audio...")
+        features = extract_features(filename)
+        all_features.append(features)
+
+    print("\nTraining model...")
+
+    all_features = np.vstack(all_features).astype(np.float64)
+
+    # Normalize features
+    scaler = StandardScaler()
+    all_features = scaler.fit_transform(all_features)
+
+    # Train GMM (FIXED PARAMETERS)
+    gmm = GaussianMixture(
+        n_components=4,
+        covariance_type='diag',
+        reg_covar=1e-3
+    )
+
+    gmm.fit(all_features)
+
+    # Save model
+    with open("models/user_model.pkl", "wb") as f:
+        pickle.dump(gmm, f)
+
+    # Save scaler
+    joblib.dump(scaler, "models/scaler.pkl")
+
+    print("✅ Enrollment complete!")
+
+if __name__ == "__main__":
+    enroll_user()
