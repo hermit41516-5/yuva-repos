@@ -1,5 +1,5 @@
-# yuva-repos
-Repository for virtual assistant YUVA
+# YUVA - Your User Authenticated Virtual Assistant
+
 Developed by **Shubhangi Chakraverty**
 
 A research-backed voice authentication and desktop virtual assistant system built using Python, MFCC feature extraction, and Gaussian Mixture Models.
