@@ -45,6 +45,8 @@ pip install -r requirements.txt
 Before using YUVA, you must enroll your voice:
 python enroll.py
 
+This will generate required model files.
+
 ### Step 2: Run Assistant
 python yuva.py
 
